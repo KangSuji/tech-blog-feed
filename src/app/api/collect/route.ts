@@ -5,7 +5,19 @@ import Parser from "rss-parser";
 //_는 숫자를 읽기 쉽게 끊어 주는 표기
 const parser = new Parser({ timeout: 10_000 });
 
-export async function GET() {
+export async function GET(request: Request) {
+  const auth = request.headers.get("authorization");
+  const secret = process.env.CRON_SECRET;
+
+  if (!secret) {
+    console.error("CRON_SECRET이 설정되지 않았습니다");
+    return Response.json({ error: "서버 설정 오류" }, { status: 500 });
+  }
+
+  if (auth !== `Bearer ${secret}`) {
+    return Response.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   const { data: blogs, error } = await supabaseAdmin
     .from("blogs")
     .select("id, name, feed_url")
