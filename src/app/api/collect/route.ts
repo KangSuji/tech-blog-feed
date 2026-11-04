@@ -26,6 +26,7 @@ export async function GET() {
 
     if (result.status === "rejected") {
       report.push({ blog: blog.name, error: String(result.reason) });
+      await updateBlog(blog.id, String(result.reason));
       continue;
     }
 
@@ -33,32 +34,55 @@ export async function GET() {
       .map((item) => toPostRow(item, blog.id))
       .filter((row) => row !== null);
 
-    // 1) rows가 비었으면 upsert 없이 inserted: 0
     if (rows.length < 1) {
       report.push({
         blog: blog.name,
         fetched: result.value.items.length,
         inserted: 0,
       });
+      await updateBlog(blog.id, null);
+
       continue;
     }
-    // 2) upsert (주석 코드 그대로, error 이름만 바꿔서)
+
     const { data, error: upsertError } = await supabaseAdmin
       .from("posts")
       .upsert(rows, { onConflict: "link", ignoreDuplicates: true })
       .select("id");
-    // 3) upsertError 있으면 { blog, error } 추가
+
     if (upsertError) {
       report.push({ blog: blog.name, error: upsertError.message });
+      await updateBlog(blog.id, upsertError.message);
+
       continue;
     }
-    // 없으면 { blog, fetched: items 수, inserted: data.length } 추가
+
     report.push({
       blog: blog.name,
       fetched: result.value.items.length,
       inserted: data.length,
     });
+    await updateBlog(blog.id, null);
   }
 
   return Response.json(report);
 }
+
+/**
+ * Blog 업데이트
+ * @param {string} id
+ * @param {string | null} errorMsg
+ */
+const updateBlog = async (id: string, errorMsg: string | null) => {
+  const values =
+    errorMsg === null
+      ? { last_fetched_at: new Date().toISOString(), last_error: null }
+      : { last_error: errorMsg };
+
+  const { error } = await supabaseAdmin
+    .from("blogs")
+    .update(values)
+    .eq("id", id);
+
+  if (error) console.error(`blogs 업데이트 실패 (${id}):`, error.message);
+};
