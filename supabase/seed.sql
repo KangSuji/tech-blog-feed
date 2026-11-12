@@ -12,3 +12,9 @@ values
   ('에이블리', 'https://brunch.co.kr/@ably-team', 'https://brunch.co.kr/rss/@@fqtR'),
   ('삼쩜삼', 'https://blog.3o3.co.kr/tag/tech/', 'https://blog.3o3.co.kr/tag/tech/rss/')  
 on conflict (feed_url) do nothing;
+
+
+update blogs set feed_url = 'https://corp.banksalad.com/blog/rss.xml'
+where name = '뱅크샐러드';
+
+
