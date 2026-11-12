@@ -34,6 +34,7 @@
 | RSS 파싱       | rss-parser                       | RSS 2.0과 Atom을 같은 형태로 읽기 위해                                          |
 | 배포·예약 작업 | Vercel, Vercel Cron              | 1시간마다 피드 수집                                                             |
 | 분석           | PostHog, Vercel Speed Insights   | 사용 이벤트와 성능 지표(LCP, INP) 측정                                          |
+| 패키지 매니저  | pnpm                             | `package.json`에 없는 패키지를 import하면 바로 에러가 나서 숨은 의존성을 막음   |
 
 ### 구조
 
@@ -69,6 +70,12 @@ PostHog 분석 ◀── 브라우저 (TanStack Query) ◀── Next.js 서버 
 
 - Next.js 16, React 19, Tailwind CSS v4로 생성했습니다.
 - 앱 코드는 `src/` 아래에 두어 루트의 설정 파일과 분리했습니다.
+- 패키지 매니저는 pnpm을 씁니다. `package.json`의 `packageManager` 필드에 버전을 고정해 두어, 로컬(Corepack)과 Vercel이 같은 pnpm 버전으로 설치합니다.
+  ```bash
+  corepack enable pnpm   # 처음 한 번
+  pnpm install
+  pnpm dev
+  ```
 
 #### DB 설계 (Supabase)
 
