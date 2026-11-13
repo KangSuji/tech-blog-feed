@@ -32,14 +32,14 @@
 | 화면 상태      | URL 쿼리 파라미터                | 필터·검색 결과를 링크로 공유할 수 있도록                                        |
 | DB             | Supabase (PostgreSQL)            | 백엔드 서버를 직접 만들지 않고 DB·권한 관리를 맡기기 위해                       |
 | RSS 파싱       | rss-parser                       | RSS 2.0과 Atom을 같은 형태로 읽기 위해                                          |
-| 배포·예약 작업 | Vercel, Vercel Cron              | 1시간마다 피드 수집                                                             |
+| 배포·예약 작업 | Vercel, Vercel Cron              | 매일 1회 피드 수집 (무료 플랜 제약)                                             |
 | 분석           | PostHog, Vercel Speed Insights   | 사용 이벤트와 성능 지표(LCP, INP) 측정                                          |
 | 패키지 매니저  | pnpm                             | `package.json`에 없는 패키지를 import하면 바로 에러가 나서 숨은 의존성을 막음   |
 
 ### 구조
 
 ```
-기술 블로그 RSS ──▶ 수집 작업 (Vercel Cron, 1시간마다) ──▶ Supabase DB
+기술 블로그 RSS ──▶ 수집 작업 (Vercel Cron, 매일 09:00 KST) ──▶ Supabase DB
                                                                │ 글 조회
 PostHog 분석 ◀── 브라우저 (TanStack Query) ◀── Next.js 서버 (미리 생성한 페이지, Route Handler)
 ```

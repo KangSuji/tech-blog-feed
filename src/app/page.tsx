@@ -19,7 +19,7 @@ export default async function Home() {
         {posts.map((post) => {
           return (
             <li key={post.id}>
-              <div className="text-sm text-black-500">
+              <div className="text-sm text-gray-950">
                 <a
                   href={post.link}
                   rel="noopener"

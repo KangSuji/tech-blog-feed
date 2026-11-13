@@ -37,14 +37,15 @@
 ## 4. 구조
 
 ```
-기술 블로그 RSS ──▶ 수집 작업 (Vercel Cron, 1시간마다) ──▶ Supabase DB
+기술 블로그 RSS ──▶ 수집 작업 (Vercel Cron, 매일 09:00 KST) ──▶ Supabase DB
                                                                │ 글 조회
 PostHog 분석 ◀── 브라우저 (TanStack Query) ◀── Next.js 서버 (ISR, Route Handler)
 ```
 
-- **수집**: Vercel Cron이 1시간마다 수집 Route Handler를 호출 → `blogs` 테이블의 피드를 순회 → `rss-parser`로 읽기 → 처음 보는 링크만 `posts`에 저장 → 제목 키워드 규칙으로 태그 부여. 실패한 피드는 기록해 두고 다음 회차에 재시도.
+- **수집**: Vercel Cron이 매일 1회(UTC 0시 = 한국 시간 9시) 수집 Route Handler를 호출 → `blogs` 테이블의 피드를 순회 → `rss-parser`로 읽기 → 처음 보는 링크만 `posts`에 저장 → 제목 키워드 규칙으로 태그 부여. 실패한 피드는 기록해 두고 다음 회차에 재시도. 새 글이 있으면 `revalidateTag("posts")`로 목록 캐시를 무효화.
+  - 하루 1회인 이유: Vercel Hobby(무료) 플랜의 Cron은 하루 1회까지만 실행됨. 더 자주 수집할 필요가 확인되면 GitHub Actions `schedule` 등으로 옮긴다.
 - **렌더링**:
-  - 메인·태그·블로그 목록 페이지: ISR (미리 생성, 1시간마다 재생성) → 빠르고 검색엔진에 노출됨
+  - 메인·태그·블로그 목록 페이지: ISR (미리 생성, 1시간마다 재생성 + 수집 후 태그로 무효화) → 빠르고 검색엔진에 노출됨
   - 검색, 무한 스크롤 다음 페이지: Route Handler + TanStack Query
   - 북마크·읽음 표시: 클라이언트 컴포넌트, 처음엔 localStorage
 - **저작권**: 본문 전체를 저장·표시하지 않는다. 제목, 요약, 작성일, 원문 링크만 사용하고 클릭 시 원문으로 이동한다.
@@ -118,7 +119,7 @@ bookmarks   (로그인 기능 추가 후)
 - [ ] Vercel에 연결해 첫 배포 (화면이 엉성해도 배포 우선)
 
 ### 2주차: 핵심 흐름 완성
-- [ ] Vercel Cron으로 1시간마다 수집 자동 실행
+- [ ] Vercel Cron으로 매일 1회 수집 자동 실행 (Hobby 플랜 제약)
 - [ ] 제목 키워드로 태그 붙이기, 태그·블로그 필터 (URL 쿼리에 저장)
 - [ ] TanStack Query로 무한 스크롤
 - [ ] 키워드 검색
