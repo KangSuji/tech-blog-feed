@@ -1,4 +1,5 @@
 import { Item } from "rss-parser";
+import { getTags } from "@/lib/tags";
 
 export type FeedItem = Item & { "content:encodedSnippet"?: string };
 
@@ -13,6 +14,7 @@ export const toPostRow = (item: FeedItem, blogId: string) => {
     link,
     summary: getSummary(item),
     published_at: item.isoDate ?? null,
+    tags: getTags(title),
   };
 };
 
