@@ -1,5 +1,8 @@
-import { cacheLife } from "next/cache";
+import { cacheLife, cacheTag } from "next/cache";
 import { supabasePublic } from "@/lib/supabase/public";
+
+// 수집 후 이 태그로 글 목록 캐시를 무효화한다 (api/collect)
+export const POSTS_CACHE_TAG = "posts";
 
 export type Post = {
   id: string;
@@ -14,6 +17,7 @@ export async function getLatestPosts(): Promise<Post[]> {
   "use cache";
   // 캐시 유지 기간
   cacheLife("hours");
+  cacheTag(POSTS_CACHE_TAG);
 
   const { data, error } = await supabasePublic
     .from("posts")

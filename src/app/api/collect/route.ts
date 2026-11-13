@@ -1,5 +1,7 @@
+import { revalidateTag } from "next/cache";
 import { supabaseAdmin } from "@/lib/supabase/admin";
 import { toPostRow } from "@/lib/feeds";
+import { POSTS_CACHE_TAG } from "@/lib/posts";
 import Parser from "rss-parser";
 
 //_는 숫자를 읽기 쉽게 끊어 주는 표기
@@ -32,6 +34,7 @@ export async function GET(request: Request) {
   );
 
   const report = [];
+  let totalInserted = 0;
 
   for (const [index, result] of results.entries()) {
     const blog = blogs[index];
@@ -74,7 +77,14 @@ export async function GET(request: Request) {
       fetched: result.value.items.length,
       inserted: data.length,
     });
+    totalInserted += data.length;
     await updateBlog(blog.id, null);
+  }
+
+  // 새 글이 있을 때만 목록 캐시를 무효화한다.
+  // "max": 다음 방문자는 예전 목록을 바로 받고, 그 요청이 백그라운드 재생성을 시작한다.
+  if (totalInserted > 0) {
+    revalidateTag(POSTS_CACHE_TAG, "max");
   }
 
   return Response.json(report);
