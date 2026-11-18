@@ -25,13 +25,28 @@ const changes = data
   .filter(({ tags, next }) => tags.join(",") !== next.join(","));
 
 const apply = process.argv.includes("--apply");
+
+console.log("changes", changes.slice(0, 5));
+console.log("changes.length", changes.length);
+
 if (apply) {
+  let errorCnt = 0;
+  let successCnt = 0;
   for (let i = 0; i < changes.length; i += 20) {
     const chunk = changes.slice(i, i + 20);
-    await Promise.all(
+    const result = await Promise.all(
       chunk.map((change) =>
         client.from("posts").update({ tags: change.next }).eq("id", change.id),
       ),
     );
+    result.forEach((r, index) => {
+      if (r.error) {
+        errorCnt += 1;
+        console.log(`${chunk[index].title}: ${r.error.message}`);
+      } else {
+        successCnt += 1;
+      }
+    });
   }
+  console.log(`성공 ${successCnt}개, 실패 ${errorCnt}개`);
 }
